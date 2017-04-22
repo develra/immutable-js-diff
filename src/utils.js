@@ -2,7 +2,7 @@
 
 var Immutable = require('immutable');
 
-var isMap = function(obj){ return Immutable.Iterable.isKeyed(obj); };
+var isMapLike = function(obj){ return Immutable.Iterable.isKeyed(obj) || Immutable.Record.isRecord(obj); };
 var isIndexed = function(obj) { return Immutable.Iterable.isIndexed(obj); };
 
 var op = function(operation, path, value){
@@ -12,7 +12,7 @@ var op = function(operation, path, value){
 };
 
 module.exports = {
-  isMap: isMap,
+  isMapLike: isMapLike,
   isIndexed: isIndexed,
   op: op
 };

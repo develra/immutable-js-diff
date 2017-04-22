@@ -7,7 +7,7 @@ var path = require('./path');
 var concatPath = path.concat,
                   escape = path.escape,
                   op = utils.op,
-                  isMap = utils.isMap,
+                  isMapLike = utils.isMapLike,
                   isIndexed = utils.isIndexed;
 
 var mapDiff = function(a, b, p){
@@ -20,10 +20,14 @@ var mapDiff = function(a, b, p){
   var lastKey = null;
   var removeKey = null
 
-  if(a.forEach){
-    a.forEach(function(aValue, aKey){
+  // If a is a record, convert it to a squence so
+  // it can be iterated as a map.
+  var aIt = a.forEach ? a : a.toSeq ? a.toSeq() : a;
+
+  if(aIt.forEach){
+    aIt.forEach(function(aValue, aKey){
       if(b.has(aKey)){
-        if(isMap(aValue) && isMap(b.get(aKey))){
+        if(isMapLike(aValue) && isMapLike(b.get(aKey))){
           ops = ops.concat(mapDiff(aValue, b.get(aKey), concatPath(path, escape(aKey))));
         }
         else if(isIndexed(b.get(aKey)) && isIndexed(aValue)){
@@ -51,7 +55,9 @@ var mapDiff = function(a, b, p){
     });
   }
 
-  b.forEach(function(bValue, bKey){
+  var bIt = b.forEach ? b : b.toSeq ? b.toSeq() : b;
+
+  bIt.forEach(function(bValue, bKey){
     if(a.has && !a.has(bKey)){
       ops.push( op('add', concatPath(path, escape(bKey)), bValue) );
     }
@@ -73,7 +79,7 @@ var sequenceDiff = function (a, b, p) {
   lcsDiff.forEach(function (diff) {
     if(diff.op === '='){ pathIndex++; }
     else if(diff.op === '!='){
-      if(isMap(diff.val) && isMap(diff.newVal)){
+      if(isMapLike(diff.val) && isMapLike(diff.newVal)){
         var mapDiffs = mapDiff(diff.val, diff.newVal, concatPath(path, pathIndex));
         ops = ops.concat(mapDiffs);
       }
@@ -106,7 +112,7 @@ var diff = function(a, b, p){
   if(isIndexed(a) && isIndexed(b)){
     return Immutable.fromJS(sequenceDiff(a, b));
   }
-  else if(isMap(a) && isMap(b)){
+  else if(isMapLike(a) && isMapLike(b)){
     return Immutable.fromJS(mapDiff(a, b));
   }
   else{
