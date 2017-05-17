@@ -107,7 +107,7 @@ var primitiveTypeDiff = function (a, b, p) {
 };
 
 var fromJS = function(value){
-  return Immutable.fromJS(value).map(op => op.get("isNative") ? op.update("value", v => {return v.toJS();}) : op);
+  return Immutable.fromJS(value).map(op => (op.get("isNative") ? op.update("value", v => v.toJS()) : op).delete("isNative"));
 };
 
 var done = false;
