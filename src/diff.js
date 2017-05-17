@@ -37,7 +37,7 @@ var mapDiff = function(a, b, p){
           var bValue = b.get ? b.get(aKey) : b;
           var areDifferentValues = (aValue !== bValue);
           if (areDifferentValues) {
-            ops.push(Object.assign(op('replace', concatPath(path, escape(aKey)), bValue), {isNative: (bValue instanceof Object)}));
+            ops.push(op('replace', concatPath(path, escape(aKey)), bValue));
           }
         }
       }
@@ -59,7 +59,7 @@ var mapDiff = function(a, b, p){
 
   bIt.forEach(function(bValue, bKey){
     if(a.has && !a.has(bKey)){
-      ops.push( op('add', concatPath(path, escape(bKey)), bValue) );
+      ops.push(op('add', concatPath(path, escape(bKey)), bValue));
     }
   });
 
@@ -107,7 +107,7 @@ var primitiveTypeDiff = function (a, b, p) {
 };
 
 var fromJS = function(value){
-  return Immutable.fromJS(value).map(op => (op.get("isNative") ? op.update("value", v => v.toJS()) : op).delete("isNative"));
+  return Immutable.fromJS(value).map(op => (op.get("isNativeObject") ? op.update("value", v => v.toJS()) : op).delete("isNative"));
 };
 
 var done = false;
