@@ -37,7 +37,7 @@ var mapDiff = function(a, b, p){
           var bValue = b.get ? b.get(aKey) : b;
           var areDifferentValues = (aValue !== bValue);
           if (areDifferentValues) {
-            ops.push(op('replace', concatPath(path, escape(aKey)), bValue));
+            ops.push(Object.assign(op('replace', concatPath(path, escape(aKey)), bValue), {isNative: (bValue instanceof Object)}));
           }
         }
       }
@@ -106,17 +106,22 @@ var primitiveTypeDiff = function (a, b, p) {
   }
 };
 
+var fromJS = function(value){
+  return Immutable.fromJS(value).map(op => op.get("isNative") ? op.update("value", v => {return v.toJS();}) : op);
+};
+
+var done = false;
 var diff = function(a, b, p){
   if(Immutable.is(a, b)){ return Immutable.List(); }
-  if(a != b && (a == null || b == null)){ return Immutable.fromJS([op('replace', '/', b)]); }
+  if(a != b && (a == null || b == null)){ return fromJS([op('replace', '/', b)]); }
   if(isIndexed(a) && isIndexed(b)){
-    return Immutable.fromJS(sequenceDiff(a, b));
+    return fromJS(sequenceDiff(a, b));
   }
   else if(isMapLike(a) && isMapLike(b)){
-    return Immutable.fromJS(mapDiff(a, b));
+    return fromJS(mapDiff(a, b));
   }
   else{
-    return Immutable.fromJS(primitiveTypeDiff(a, b, p));
+    return fromJS(primitiveTypeDiff(a, b, p));
   }
 };
 

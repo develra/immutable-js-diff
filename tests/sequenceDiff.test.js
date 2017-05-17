@@ -5,7 +5,7 @@ var Immutable = require('immutable');
 var JSC = require('jscheck');
 var assert = require('assert');
 
-describe('Sequence diff', function() {
+describe('Sequence diff', function () {
   var failure = null;
 
   before(function () {
@@ -19,7 +19,7 @@ describe('Sequence diff', function() {
   });
 
   afterEach(function () {
-    if(failure){
+    if (failure) {
       console.error(failure);
       throw failure;
     }
@@ -28,7 +28,7 @@ describe('Sequence diff', function() {
   it('check properties', function () {
     JSC.test(
       'returns [] when equal',
-      function(veredict, array){
+      function (veredict, array) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
 
@@ -43,39 +43,39 @@ describe('Sequence diff', function() {
   });
 
   it('returns add operation', function () {
-    var list1 = Immutable.fromJS([1,2,3,4]);
-    var list2 = Immutable.fromJS([1,2,3,4,5]);
+    var list1 = Immutable.fromJS([1, 2, 3, 4]);
+    var list2 = Immutable.fromJS([1, 2, 3, 4, 5]);
 
     var result = diff(list1, list2);
-    var expected = Immutable.fromJS([{op: 'add', path: '/4', value: 5}]);
+    var expected = Immutable.fromJS([{ op: 'add', path: '/4', value: 5 }]);
 
     assert.ok(Immutable.is(result, expected));
   });
 
   it('returns remove operation', function () {
-    var list1 = Immutable.fromJS([1,2,3,4]);
-    var list2 = Immutable.fromJS([1,2,4]);
+    var list1 = Immutable.fromJS([1, 2, 3, 4]);
+    var list2 = Immutable.fromJS([1, 2, 4]);
 
     var result = diff(list1, list2);
-    var expected = Immutable.fromJS([{op: 'remove', path: '/2'}]);
+    var expected = Immutable.fromJS([{ op: 'remove', path: '/2' }]);
 
     assert.ok(Immutable.is(result, expected));
   });
 
   it('returns add/remove operations', function () {
-    var list1 = Immutable.fromJS([1,2,3,4]);
-    var list2 = Immutable.fromJS([1,2,4,5]);
+    var list1 = Immutable.fromJS([1, 2, 3, 4]);
+    var list2 = Immutable.fromJS([1, 2, 4, 5]);
 
     var result = diff(list1, list2);
     var expected = Immutable.fromJS([
-      {op: 'replace', path: '/2', value: 4},
-      {op: 'replace', path: '/3', value: 5}
+      { op: 'replace', path: '/2', value: 4 },
+      { op: 'replace', path: '/3', value: 5 }
     ]);
 
     assert.ok(Immutable.is(result, expected));
   });
 
-  it('returns correct diff when removing sequenced items in large list', function(){
+  it('returns correct diff when removing sequenced items in large list', function () {
     var list1 = Immutable.Range(1, 1000);
     var list2 = Immutable.Range(1, 900);
 
@@ -86,7 +86,7 @@ describe('Sequence diff', function() {
     assert.ok(Immutable.is(result, expected));
   });
 
-  it('returns correct diff when removing multiple sequenced items in large list', function(){
+  it('returns correct diff when removing multiple sequenced items in large list', function () {
     var list1 = Immutable.Range(1, 1000);
     var list2 = Immutable.Range(1, 900).concat(Immutable.Range(950, 955));
 
@@ -107,14 +107,14 @@ describe('Sequence diff', function() {
   it('JSCheck', function () {
     JSC.test(
       'returns add when value is inserted in the middle of sequence',
-      function(veredict, array, addIdx, newValue){
+      function (veredict, array, addIdx, newValue) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var modifiedList = list2.splice(addIdx, 0, newValue);
 
         var result = diff(list1, modifiedList);
         var expected = Immutable.fromJS([
-          {op: 'add', path: '/'+addIdx, value: newValue}
+          { op: 'add', path: '/' + addIdx, value: newValue }
         ]);
 
         return veredict(Immutable.is(result, expected));
@@ -128,14 +128,14 @@ describe('Sequence diff', function() {
 
     JSC.test(
       'returns remove',
-      function(veredict, array, removeIdx){
+      function (veredict, array, removeIdx) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var modifiedList = list2.splice(removeIdx, 1);
 
         var result = diff(list1, modifiedList);
         var expected = Immutable.fromJS([
-          {op: 'remove', path: '/'+removeIdx}
+          { op: 'remove', path: '/' + removeIdx }
         ]);
 
         return veredict(Immutable.is(result, expected));
@@ -148,13 +148,13 @@ describe('Sequence diff', function() {
 
     JSC.test(
       'returns sequential removes',
-      function(veredict, array, nRemoves){
+      function (veredict, array, nRemoves) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var modifiedList = list2.skip(nRemoves);
 
         var result = diff(list1, modifiedList);
-        var expected = Immutable.Repeat(Immutable.Map({op: 'remove', path: '/0'}), nRemoves);
+        var expected = Immutable.Repeat(Immutable.Map({ op: 'remove', path: '/0' }), nRemoves);
 
         return veredict(Immutable.is(result, expected));
       },
@@ -166,14 +166,14 @@ describe('Sequence diff', function() {
 
     JSC.test(
       'returns replace operations',
-      function(veredict, array, replaceIdx, newValue){
+      function (veredict, array, replaceIdx, newValue) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var modifiedList = list2.set(replaceIdx, newValue);
 
         var result = diff(list1, modifiedList);
         var expected = Immutable.fromJS([
-          {op: 'replace', path: '/'+replaceIdx, value: newValue}
+          { op: 'replace', path: '/' + replaceIdx, value: newValue }
         ]);
 
         return veredict(Immutable.is(result, expected));
@@ -186,17 +186,17 @@ describe('Sequence diff', function() {
     );
   });
 
-  it('large sequence diff', function() {
+  it('large sequence diff', function () {
     JSC.test(
       'returns add',
-      function(veredict, array, newValue){
+      function (veredict, array, newValue) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var modifiedList = list2.push(newValue);
 
         var result = diff(list1, modifiedList);
         var expected = Immutable.fromJS([
-          {op: 'add', path: '/'+array.length, value: newValue}
+          { op: 'add', path: '/' + array.length, value: newValue }
         ]);
 
         return veredict(Immutable.is(result, expected));
@@ -209,7 +209,7 @@ describe('Sequence diff', function() {
 
     JSC.test(
       'returns replace',
-      function(veredict, array, newValue){
+      function (veredict, array, newValue) {
         var list1 = Immutable.fromJS(array);
         var list2 = Immutable.fromJS(array);
         var idx = 100;
@@ -217,7 +217,7 @@ describe('Sequence diff', function() {
 
         var result = diff(list1, modifiedList);
         var expected = Immutable.fromJS([
-          {op: 'replace', path: '/'+idx, value: newValue}
+          { op: 'replace', path: '/' + idx, value: newValue }
         ]);
 
         return veredict(Immutable.is(result, expected));
@@ -229,15 +229,21 @@ describe('Sequence diff', function() {
     );
   });
 
-  it('Seq test', function(){
+  it('Seq test', function () {
     var setDiff = diff(Immutable.Set(['1']), Immutable.Set(['1']));
     assert.equal(setDiff.size, 0);
 
-    setDiff = diff(Immutable.Set([1]), Immutable.Set([1,2,3]));
+    setDiff = diff(Immutable.Set([1]), Immutable.Set([1, 2, 3]));
     var expected = Immutable.fromJS([
-      {op: 'replace', path: '/', value: Immutable.Set([1,2,3])}
+      { op: 'replace', path: '/', value: Immutable.Set([1, 2, 3]) }
     ]);
 
     assert.ok(Immutable.is(setDiff, expected));
+  });
+
+  it('returns the correct value when adding records', function () {
+    var R = Immutable.Record({ key: "value" });
+    var patch = diff(Immutable.List(), Immutable.List([new R()]));
+    console.log(patch);
   });
 });
