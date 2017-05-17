@@ -59,7 +59,7 @@ var mapDiff = function(a, b, p){
 
   bIt.forEach(function(bValue, bKey){
     if(a.has && !a.has(bKey)){
-      ops.push( op('add', concatPath(path, escape(bKey)), bValue) );
+      ops.push(op('add', concatPath(path, escape(bKey)), bValue));
     }
   });
 
@@ -106,17 +106,22 @@ var primitiveTypeDiff = function (a, b, p) {
   }
 };
 
+var fromJS = function(value){
+  return Immutable.fromJS(value).map(op => (op.get("isNativeObject") ? op.update("value", v => v.toJS()) : op).delete("isNativeObject"));
+};
+
+var done = false;
 var diff = function(a, b, p){
   if(Immutable.is(a, b)){ return Immutable.List(); }
-  if(a != b && (a == null || b == null)){ return Immutable.fromJS([op('replace', '/', b)]); }
+  if(a != b && (a == null || b == null)){ return fromJS([op('replace', '/', b)]); }
   if(isIndexed(a) && isIndexed(b)){
-    return Immutable.fromJS(sequenceDiff(a, b));
+    return fromJS(sequenceDiff(a, b));
   }
   else if(isMapLike(a) && isMapLike(b)){
-    return Immutable.fromJS(mapDiff(a, b));
+    return fromJS(mapDiff(a, b));
   }
   else{
-    return Immutable.fromJS(primitiveTypeDiff(a, b, p));
+    return fromJS(primitiveTypeDiff(a, b, p));
   }
 };
 
